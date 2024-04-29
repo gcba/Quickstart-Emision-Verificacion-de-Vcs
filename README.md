@@ -1,4 +1,4 @@
-## Quickstar: Proceso de Emisión y Proceso de Verificación de Credenciales con código QR
+## Quickstart: Proceso de Emisión y Proceso de Verificación de Credenciales con código QR
 
 El objetivo de este Quickstart es registrar los pasos para realizar un proceso de emisión y verficiación de credenciales. 
 
@@ -18,8 +18,14 @@ La comunicación exitosa con ese DID va a estar dentro de lo que conocemos como 
 
 4. Entonces las verification relationships son aquellos que definen para qué podemos usar una clave.
 
-En otras palabras, un verification method es una clave publica mediante la cual alguien puede comunicarse con ese did firmando con su clave privada, generandose una clave compartida entre ambas partes, puediendo el receptor desencriptar ese mensaje con su clave privada conociendo la clave publica del emisor a traves de su did document.
+En otras palabras, un verification method es una clave publica mediante la cual alguien puede comunicarse con ese did firmando con su clave privada, generandose una clave compartida entre ambas partes, puediendo el receptor desencriptar ese mensaje con su clave privada conociendo la clave publica del emisor a traves de su did document
 
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+## Este Quickstar se divide en 3 partes:
+1. Creación, publicación y resolución de DID. Para este paso, usted deberá tener tecnologías previamente instaladas, utilizar el componente *Key Management Service* (KMS Storage y KMS Keys) para generar claves, y un Nodo para publicar el did en la Blockchain.
+2. Creación de Credencial Verificable, de ahora en más VC
+3. Verificación de una VC 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Quickstart
