@@ -555,6 +555,65 @@ En tu terminal verás el resultado de los console.log que tienes en tu código, 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ### Verificación de una VC
 
+### 1. Instala el siguiente paquete NPMJs:
+
+```
+npm install @quarkid/vc-verifier @quarkid/did-resolver
+```
+
+### 2. Verifica
+
+Para verificar la credencial usaremos el servicio VcVerifierService. A este servicio necesitamos pasarle un callback para resolver el DID que sera la misma funcion utilizada en la sección Resuelve.
+
+En la funcion credential que creaste en el paso anterior agrega el siguiente codigo:
+```
+import { VCVerifierService } from "@quarkid/vc-verifier";
+import { DIDUniversalResolver } from "@quarkid/did-resolver";
+```
+```
+const QuarkIDEndpoint = "https://node-ssi.buenosaires.gob.ar";
+
+const service = new VCVerifierService({
+  didDocumentResolver: async (did: string) => {
+    const universalResolver = new DIDUniversalResolver({
+      universalResolverURL: QuarkIDEndpoint,
+    });
+
+    const didDocument = await universalResolver.resolveDID(did);
+
+    return didDocument;
+  },
+});
+const result = await service.verify(vc, new AssertionMethodPurpose());
+console.log("result", result);
+
+```
+Resolvemos el Did Document y llamamos a la funcion verificadora, la cual recibe la credencial y el proposito, que en este caso es Assertion Method que es aquel que se usa para el caso de verificacion de credenciales.
+
+La variable result devuelve true si verifica correctamente, o false con un resultado de error si falló la verificacion.
+
+### 3. Prueba
+```
+ts-node credential.ts
+```
+
+o
+```
+npx ts-node credential.ts
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
