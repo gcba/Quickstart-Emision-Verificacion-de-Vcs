@@ -2,34 +2,12 @@
 
 El objetivo de este Quickstart es registrar los pasos para realizar un proceso de emisión y verficiación de credenciales. 
 
-### Introducción: ¿Qué es un DID? 
-Los DID son URI asociados a un sujeto y junto con un DID Document permiten interacciones confiables asociadas a ese sujeto. Esta diseñado para que el controlador de un DID brinde control sobre él sin requerir el permiso de ninguna otra parte. Son identificadores descentralizados e interoperables que fueron creados para desvincularse de los identificadores centralizados.
-Estos DID resuelven un DID DOCUMENT que es elemento asociado a un DID, mediante el cual podemos obtener informacion del mismo y asi comunicarnos con ese DID. Entonces el did documet solo posee informacion para poder comunicarnos con el mundo exterior, no debe contar con datos que identifiquen al sujeto del DID. 
-
-### Verificación: Verification method y Verification relationship
-La comunicación exitosa con ese DID va a estar dentro de lo que conocemos como *verification methods del did document*. 
-### _Es necesario diferenciar lo que es un verification method y una verification relationship._ 
-
-1. Por un lado, debemos entender que los verification methods estan compuestos por claves publicas conocidas a travez del Did Document y que nos permiten la comunicacion con ese DID.
-
-2. Esas claves públicas nos sirven para verificar firmas, pero además estan permisionadas, y a esos permisos los llamamos verification relationships, que describen el motivo para el cual queremos usar una clave pública en particular.
-
-3. En el did document de ejemplo lo que vemos en authentication serian las claves que se utilizan para autenticarse. En ese caso podemos ver que en la misma verification relationship tenemos el verification method pero no siempre se representa de esta manera. Puede pasar que en un did document nos encontremos que los verification methods estan separados y desacoplados de las verification relationships.
-
-4. Entonces las verification relationships son aquellos que definen para qué podemos usar una clave.
-
-En otras palabras, un verification method es una clave publica mediante la cual alguien puede comunicarse con ese did firmando con su clave privada, generandose una clave compartida entre ambas partes, puediendo el receptor desencriptar ese mensaje con su clave privada conociendo la clave publica del emisor a traves de su did document
-
------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-## Este Quickstar se divide en 3 partes:
+## 
 1. Creación, publicación y resolución de DID. Para este paso, usted deberá tener tecnologías previamente instaladas, utilizar el componente *Key Management Service* (KMS Storage y KMS Keys) para generar claves, y un Nodo para publicar el did en la Blockchain.
 2. Creación de Credencial Verificable, de ahora en más VC
 3. Verificación de una VC 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-Quickstart
--
 ### Instala y crea tu DID
 _Pre requisitos_
 
