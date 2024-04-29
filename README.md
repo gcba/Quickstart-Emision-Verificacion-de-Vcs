@@ -1,4 +1,4 @@
-## Quickstart: Proceso de Emisión y Proceso de Verificación de Credenciales con código QR
+## Quickstart
 
 El objetivo de este Quickstart es registrar los pasos para realizar un proceso de emisión y verficiación de credenciales. 
 
