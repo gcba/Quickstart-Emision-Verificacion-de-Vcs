@@ -3,9 +3,9 @@
 El objetivo de este Quickstart es registrar los pasos para realizar un proceso de emisión y verficiación de credenciales. 
 
 ## 
-1. Creación, publicación y resolución de DID. Para este paso, usted deberá tener tecnologías previamente instaladas, utilizar el componente *Key Management Service* (KMS Storage y KMS Keys) para generar claves, y un Nodo para publicar el did en la Blockchain.
-2. Creación de Credencial Verificable, de ahora en más VC
-3. Verificación de una VC 
+1. [Creación, publicación y resolución de DID](https://github.com/gcba/Quickstart-Emision-Verificacion-de-Vcs/tree/master?tab=readme-ov-file#instala-y-crea-tu-did).
+2. [Creación de Credencial Verificable, de ahora en más VC]
+3. [Verificación de una VC]
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ### Instala y crea tu DID
@@ -350,4 +350,4 @@ npx ts-node did.ts
 > [!NOTE]
 > En tu terminal podrás observar el resultado de los console.log que estan en tu código. La resolución del Did Document demora unos segundos en impactar, esto se debe a que se esta publicando el did en la blockchain y este proceso puede demorar.
 
-
+Creación de Credencial Verificable, de ahora en más VC
