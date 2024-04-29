@@ -4,7 +4,7 @@ El objetivo de este Quickstart es registrar los pasos para realizar un proceso d
 
 ## 
 1. [Creación, publicación y resolución de DID](https://github.com/gcba/Quickstart-Emision-Verificacion-de-Vcs/tree/master?tab=readme-ov-file#instala-y-crea-tu-did).
-2. [Creación de Credencial Verificable, de ahora en más VC]
+2. [Creación de Credencial Verificable, de ahora en más VC](https://github.com/gcba/Quickstart-Emision-Verificacion-de-Vcs/tree/master?tab=readme-ov-file#creaci%C3%B3n-de-una-vc-credencial-verificable).
 3. [Verificación de una VC]
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
