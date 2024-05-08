@@ -609,7 +609,7 @@ npx ts-node credential.ts
 
 ## Generación de Credencial de pruebas con código QR
 
-1. Clonar el archivo (Demo)[https://github.com/gcba/Quickstart-Emision-Verificacion-de-Vcs/tree/master/demo]
+1. Clonar el archivo [Demo](https://github.com/gcba/Quickstart-Emision-Verificacion-de-Vcs/tree/master/demo)
 
 2. Eliminar de la solucion los archivos:
 
