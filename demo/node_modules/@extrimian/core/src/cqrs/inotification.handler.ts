@@ -1,0 +1,5 @@
+import { INotification } from "./inotification";
+
+export interface INotificationHandler<TNotification extends INotification> {
+    handle(payload: TNotification): Promise<void>;
+}

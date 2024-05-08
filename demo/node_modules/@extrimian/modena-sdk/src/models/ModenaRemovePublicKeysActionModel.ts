@@ -1,0 +1,4 @@
+export default interface ModenaRemovePublicKeysActionModel {
+    action: string;
+    ids: string[];
+}

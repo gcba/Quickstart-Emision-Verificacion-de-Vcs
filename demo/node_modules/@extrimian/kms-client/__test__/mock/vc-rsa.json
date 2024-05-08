@@ -1,0 +1,38 @@
+{
+    "@context": [
+      	"https://w3c-ccg.github.io/security-vocab/contexts/security-v2.jsonld",
+        "https://www.w3.org/2018/credentials/v1",
+        "https://w3id.org/vaccination/v1"
+    ],
+    "type": [
+        "VerifiableCredential",
+        "VaccinationCertificate"
+    ],
+    "id": "urn:uvci:af5vshde843jf831j128fj",
+    "name": "COVID-19 Vaccination Certificate",
+    "description": "COVID-19 Vaccination Certificate",
+    "issuanceDate": "2019-12-03T12:19:52Z",
+    "expirationDate": "2029-12-03T12:19:52Z",
+    "issuer": "did:modena:matic:EiDxVyreUxU_nBYhtifpAXC7PcgMJ3DLkl_1Vdxy0Izg0w",
+    "credentialSubject": {
+        "type": "VaccinationEvent",
+        "batchNumber": "1183738569",
+        "administeringCentre": "MoH",
+        "healthProfessional": "MoH",
+        "countryOfVaccination": "NZ",
+        "recipient": {
+            "type": "VaccineRecipient",
+            "givenName": "JOHN",
+            "familyName": "SMITH",
+            "gender": "Male",
+            "birthDate": "1958-07-17"
+        },
+        "vaccine": {
+            "type": "Vaccine",
+            "disease": "COVID-19",
+            "atcCode": "J07BX03",
+            "medicinalProductName": "COVID-19 Vaccine Moderna",
+            "marketingAuthorizationHolder": "Moderna Biotech"
+        }
+    }
+}

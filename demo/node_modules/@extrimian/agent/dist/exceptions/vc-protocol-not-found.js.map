@@ -1,0 +1,1 @@
+{"version":3,"file":"vc-protocol-not-found.js","sourceRoot":"","sources":["../../src/exceptions/vc-protocol-not-found.ts"],"names":[],"mappings":";;;AAAA,MAAa,uBAAwB,SAAQ,KAAK;IAC9C;QACI,KAAK,EAAE,CAAC;QAER,gCAAgC;QAChC,MAAM,CAAC,cAAc,CAAC,IAAI,EAAE,uBAAuB,CAAC,SAAS,CAAC,CAAC;IACnE,CAAC;CACJ;AAPD,0DAOC"}

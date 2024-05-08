@@ -1,0 +1,24 @@
+{
+	"compilerOptions": {
+		"target": "es2017",
+		"lib": [
+			"es6",
+			"dom"
+		],
+		"types": [
+			"reflect-metadata",
+			"node",
+			"jest"
+		],
+		"outDir": "dist",
+		"module": "commonjs",
+		"moduleResolution": "node",
+		"sourceMap": true,
+		"declaration": true,
+		"skipLibCheck": true,
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true,
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true
+	}
+}

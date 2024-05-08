@@ -1,0 +1,108 @@
+import fetch from "node-fetch";
+import { PublishDIDResponse } from "../models/publish-did.response";
+import { ModenaRegistryBase } from "./modena-registry.service";
+import { PublishDIDRequest } from "../models/publish-did-request";
+import { DIDDocumentMetadata, ModenaPublicKeyPurpose, ModenaRequest } from "@extrimian/modena-sdk";
+import { IJWK } from "@extrimian/kms-core";
+import { VerificationMethod } from "../models/interfaces";
+import { Service } from "@extrimian/did-core";
+import { UpdateDIDRequest } from "../models/update-did-request";
+
+export class ModenaDidPublishRequest extends PublishDIDRequest {
+  modenaApiURL: string;
+}
+
+export class Did extends ModenaRegistryBase<ModenaDidPublishRequest> {
+
+  async publishDID(request: ModenaDidPublishRequest): Promise<PublishDIDResponse> {
+    const input = {
+      recoveryKeys: request.createDIDResponse.recoveryKeys,
+      updateKeys: request.createDIDResponse.updateKeys,
+      document: request.createDIDResponse.document
+    };
+
+    const createRequest = ModenaRequest.createCreateRequest(input);
+
+    let url = `${request.modenaApiURL}/create`;
+    let headers = {
+      "Content-Type": "application/json",
+    };
+
+    if (request.apiKey && (request.apiKey.type == "queryParam" || !request.apiKey.type)) {
+      url = `${url}?${request.apiKey.fieldName || "apikey"}=${request.apiKey.value}`;
+    } else if (request.apiKey) {
+      headers[request.apiKey.fieldName || "apikey"] = request.apiKey.value;
+    };
+
+    const options = {
+      method: "POST",
+      headers,
+      body: JSON.stringify(createRequest),
+    };
+
+    const response = await fetch(url, options);
+
+    if (response.status !== 200 && response.status !== 201) {
+      const msg = await response.json();
+      throw new Error(`DID creation is not ok: ${msg}`);
+    }
+    const { canonicalId } = ((await response.json()) as any)
+      .didDocumentMetadata;
+
+    return {
+      canonicalId: canonicalId.substring(canonicalId.lastIndexOf(":") + 1),
+      did: canonicalId,
+      longDid: canonicalId.substring(0, canonicalId.lastIndexOf(":")) + request.createDIDResponse.longDid.replace("did:", ":"),
+    };
+  }
+
+  async updateDID(params: UpdateDIDRequest) {
+    const request = await ModenaRequest.createUpdateRequest({
+      nextUpdatePublicKeys: params.newUpdateKeys,
+      documentMetadata: params.documentMetadata,
+      updateKeysToRemove: params.updateKeysToRemove,
+      didSuffix: params.didSuffix,
+      updatePublicKey: params.updatePublicKey,
+      signer: {
+        async sign(header: object, content: object): Promise<string> {
+          return await params.signer(content);
+        }
+      },
+      idsOfPublicKeysToRemove: params.idsOfVerificationMethodsToRemove,
+      idsOfServicesToRemove: params.idsOfServiceToRemove,
+      publicKeysToAdd: params.verificationMethodsToAdd.map(x => ({
+        id: x.id,
+        publicKeyJwk: x.publicKeyJwk,
+        type: x.type,
+        purposes: x.purpose.map(y => y.name) as ModenaPublicKeyPurpose[]
+      })),
+      servicesToAdd: params.servicesToAdd
+    });
+
+    let url = `${params.updateApiUrl}/create`;
+    let headers = {
+      "Content-Type": "application/json",
+    };
+
+    if (params.apiKey && (params.apiKey.type == "queryParam" || !params.apiKey.type)) {
+      url = `${url}?${params.apiKey.fieldName || "apikey"}=${params.apiKey.value}`;
+    } else if (params.apiKey) {
+      headers[params.apiKey.fieldName || "apikey"] = params.apiKey.value;
+    };
+
+    const options = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(request),
+    };
+
+    const response = await fetch(url, options);
+
+    if (response.status !== 200 && response.status !== 201) {
+      const msg = await response.json();
+      throw new Error(`DID update is not ok: ${msg}`);
+    }
+  }
+}

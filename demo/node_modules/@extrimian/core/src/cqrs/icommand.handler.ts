@@ -1,0 +1,5 @@
+import { ICommand } from "./icommand";
+
+export interface ICommandHandler<TEntity extends ICommand<TResult>, TResult> {
+    handle(command: TEntity): Promise<TResult>;
+}

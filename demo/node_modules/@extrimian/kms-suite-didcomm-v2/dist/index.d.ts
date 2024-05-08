@@ -1,0 +1,1 @@
+export { DIDCommSuite } from "./services/did-comm-suite";

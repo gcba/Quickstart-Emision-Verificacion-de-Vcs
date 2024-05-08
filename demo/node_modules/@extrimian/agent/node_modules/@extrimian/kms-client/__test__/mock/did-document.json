@@ -1,0 +1,45 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/did/v1",
+    "https://identity.foundation/EcdsaSecp256k1RecoverySignature2020/lds-ecdsa-secp256k1-recovery2020-0.0.jsonld"
+  ],
+  "id": "did:modena:matic:EiDxVyreUxU_nBYhtifpAXC7PcgMJ3DLkl_1Vdxy0Izg0w",
+  "verificationMethod": [
+    {
+      "id": "#rsa",
+      "controller": "did:modena:matic:EiDxVyreUxU_nBYhtifpAXC7PcgMJ3DLkl_1Vdxy0Izg0w",
+      "type": "RsaVerificationKey2018",
+      "publicKeyJwk": {
+        "kty": "RSA",
+        "n": "s3K2iqmcdM0YAnvdcWa3b85miUUrJcGSAfGTvFsYDy1IpeHldiWMQPDFkD7LUIGAbSuDsyf9CA1XEGY4aAXUcZ06oI0u8fHpj1mv4HwPsUSjjisDdyWPcXGrwA-Njbg3L149PxTLiZJ44SvBtYJXJh8MWy7McwTTBgXir7tieStXxDuXIlNaKPqHNojN2STOS3EmjrpTwGXTTie-Ghu2eLtvwaPgtbEt3jgO7D5sLnARwdxSIV--NaP-wQI5H4gGVV_ypdwYHGT1JJz7stPzJa9jirivVgiJ6KtaD5oae-DnlpgelOUIBwEPjKaWRpuf8fXNHnw6tjxnJFFFKYqs6Q",
+        "e": "AQAB"
+      }
+    },
+    {
+      "id": "#bbsbls",
+      "controller": "did:modena:matic:EiDxVyreUxU_nBYhtifpAXC7PcgMJ3DLkl_1Vdxy0Izg0w",
+      "type": "Bls12381G1Key2020",
+      "publicKeyJwk": {
+        "kty": "EC",
+        "crv": "secp256k1",
+        "x": "iBvVOxz-hN6Mc35z1YIj9Gg-_YQH_7Vyr26FBaLjchmehea9sRozvpXIl2Gr9hIi",
+        "y": "GQocmH9C3OCKBir2xI7cv1HXgWgIbTteHPK-DTXSFK4KSoWE7KfZcLNtdLf0HKIM"
+      }
+    },
+    {
+      "id": "#didcomm",
+      "controller": "did:modena:matic:EiDxVyreUxU_nBYhtifpAXC7PcgMJ3DLkl_1Vdxy0Izg0w",
+      "type": "X25519KeyAgreementKey2019",
+      "publicKeyJwk": {
+        "kty": "EC",
+        "crv": "Ed25519",
+        "x": "0PPV-Lzi1UfUShneKkeGzQ",
+        "y": "E9dgrg6vLAaywTNOfpetsw"
+      }
+    }
+  ],
+  "assertionMethod": [
+    "#rsa",
+    "#bbsbls"
+  ]
+}

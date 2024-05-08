@@ -1,0 +1,4 @@
+export default interface ModenaRemoveServicesActionModel {
+    action: string;
+    ids: string[];
+}

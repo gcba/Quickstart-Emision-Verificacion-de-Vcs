@@ -1,0 +1,23 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/did/v1",
+    "https://identity.foundation/EcdsaSecp256k1RecoverySignature2020/lds-ecdsa-secp256k1-recovery2020-0.0.jsonld"
+  ],
+  "id": "did:fake:example1",
+  "verificationMethod": [
+    {
+      "id": "#didcomm",
+      "controller": "did:fake:example1",
+      "type": "X25519KeyAgreementKey2019",
+      "publicKeyJwk": {
+        "kty": "EC",
+        "crv": "Ed25519",
+        "x": "ipg8BeqnXJ2hOfsvieEkrA",
+        "y": "rvGI21wirJNo7D6HBWNM4g"
+      }
+    }
+  ],
+  "keyAgreement": [
+    "#didcomm"
+  ]
+}

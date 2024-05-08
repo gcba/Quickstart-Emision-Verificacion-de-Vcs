@@ -1,0 +1,163 @@
+import {
+    ModenaDid,
+    ModenaDocumentModel,
+    ModenaPublicKeyModel,
+    ModenaPublicKeyPurpose,
+    ModenaRequest,
+    ModenaSdkConfig,
+} from "@extrimian/modena-sdk";
+import { KMSClient } from "@extrimian/kms-client";
+import { IJWK, KMSStorage, LANG, Suite } from "@extrimian/kms-core";
+import { Service } from '@extrimian/did-core';
+import fetch from "node-fetch";
+import { CreateDIDResponse } from "../models/create-did.response";
+import { PublishDIDResponse } from "../models/publish-did.response";
+import { IPublicKeys, ProcessResult, VerificationMethod } from "../models/interfaces";
+import { PublishDIDRequest } from "../models/publish-did-request";
+import { DIDDocumentMetadata } from "@extrimian/modena-sdk";
+import { UpdateDIDRequest } from "../models/update-did-request";
+
+export abstract class ModenaRegistryBase<TPublishRequest extends PublishDIDRequest> {
+
+    async create(
+        createApiUrl: string,
+        initialPublicKeys: IPublicKeys,
+        storage: KMSStorage,
+        services?: Service[],
+        mobile?: boolean
+    ): Promise<ProcessResult> {
+        let recoveryKey = initialPublicKeys.recoveryKey;
+        let updateKey = initialPublicKeys.updateKey;
+        let didCommJwk = initialPublicKeys.didCommJwk;
+        let bbsBlsJwk = initialPublicKeys.bbsBlsJwk;
+
+        const kmsClient = new KMSClient({
+            lang: LANG.en,
+            storage,
+            mobile
+        });
+
+        if (!recoveryKey) {
+            const { publicKeyJWK } = await kmsClient.create(Suite.ES256k);
+            recoveryKey = [publicKeyJWK];
+        }
+
+        if (!updateKey) {
+            const { publicKeyJWK } = await kmsClient.create(Suite.ES256k);
+            updateKey = [publicKeyJWK];
+        }
+
+        if (!didCommJwk) {
+            const { publicKeyJWK } = await kmsClient.create(Suite.DIDCommV2);
+            didCommJwk = publicKeyJWK;
+        }
+
+        if (!bbsBlsJwk) {
+            const { publicKeyJWK } = await kmsClient.create(Suite.Bbsbls2020);
+            bbsBlsJwk = publicKeyJWK;
+        }
+
+        const publicKeyDidComm: ModenaPublicKeyModel = {
+            id: "did-comm",
+            type: "X25519KeyAgreementKey2019",
+            publicKeyJwk: didCommJwk,
+            purposes: [ModenaPublicKeyPurpose.KeyAgreement],
+        };
+
+        const publicKeyBbs: ModenaPublicKeyModel = {
+            id: "vc-bbs",
+            type: "Bls12381G1Key2020",
+            publicKeyJwk: bbsBlsJwk,
+            purposes: [ModenaPublicKeyPurpose.AssertionMethod],
+        };
+
+        const publicKeys: ModenaPublicKeyModel[] = [publicKeyDidComm, publicKeyBbs];
+        const document: ModenaDocumentModel = {
+            publicKeys,
+            services,
+        };
+
+        const input = { recoveryKeys: recoveryKey, updateKeys: updateKey, document };
+        const request = ModenaRequest.createCreateRequest(input);
+
+        const options = {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(request),
+        };
+
+        const response = await fetch(createApiUrl, options);
+
+        if (response.status !== 200 && response.status !== 201) {
+            const msg = await response.json();
+            throw new Error(`DID creation is not ok: ${msg}`);
+        }
+        const { canonicalId } = ((await response.json()) as any)
+            .didDocumentMetadata;
+
+        const exportedRecoveryKey = await Promise.all(await recoveryKey.map(async x => kmsClient.export(x)));
+        const exportedUpdateKey = await Promise.all(await updateKey.map(async x => kmsClient.export(x)));
+        const exportedDidCommKey = await kmsClient.export(didCommJwk);
+        const exportedBbsKey = await kmsClient.export(bbsBlsJwk);
+
+        return {
+            canonicalId,
+            recoveryKey: exportedRecoveryKey,
+            updateKey: exportedUpdateKey,
+            didCommKey: exportedDidCommKey,
+            bbsBls2020Key: exportedBbsKey,
+        };
+    }
+
+    async createDID(params: {
+        updateKeys: IJWK[],
+        recoveryKeys: IJWK[],
+        verificationMethods: VerificationMethod[],
+        services?: Service[],
+        didMethod?: string,
+    }): Promise<CreateDIDResponse> {
+
+        if (ModenaSdkConfig.maxCanonicalizedDeltaSizeInBytes < 2000) {
+            ModenaSdkConfig.maxCanonicalizedDeltaSizeInBytes = 2000;
+        }
+
+        let updateKeys = params.updateKeys;
+        let recoveryKeys = params.recoveryKeys;
+
+        const publicKeys: ModenaPublicKeyModel[] = params.verificationMethods.map(vm => {
+            return {
+                id: vm.id,
+                publicKeyJwk: vm.publicKeyJwk,
+                type: vm.type,
+                purposes: vm.purpose.map(x => x.name as ModenaPublicKeyPurpose),
+            }
+        });
+
+        const document: ModenaDocumentModel = {
+            publicKeys,
+            services: params.services,
+        };
+
+        ModenaSdkConfig.network = params.didMethod as any;
+
+        const longDid = await ModenaDid.createLongFormDid({ recoveryKeys, updateKeys, document });
+
+        return {
+            recoveryKeys: recoveryKeys,
+            updateKeys: updateKeys,
+            document,
+            longDid,
+            didUniqueSuffix: longDid.substring(longDid.substring(0, longDid.lastIndexOf(":")).lastIndexOf(":") + 1)
+        };
+    }
+
+    abstract updateDID(params: UpdateDIDRequest);
+
+    async publish(did: string): Promise<string> {
+        return did;
+    }
+
+    abstract publishDID(request: TPublishRequest): Promise<PublishDIDResponse>;
+}

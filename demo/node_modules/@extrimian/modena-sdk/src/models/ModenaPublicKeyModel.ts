@@ -1,0 +1,11 @@
+import ModenaPublicKeyPurpose from '../enums/ModenaPublicKeyPurpose';
+
+/**
+ * Data model representing a public key in the DID Document.
+ */
+export default interface ModenaPublicKeyModel {
+  id: string;
+  type: string;
+  publicKeyJwk: object;
+  purposes?: ModenaPublicKeyPurpose[];
+};

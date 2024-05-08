@@ -1,0 +1,6 @@
+import IonServiceModel from './ModenaServiceModel';
+
+export default interface ModenaAddServicesActionModel {
+    action: string;
+    services: IonServiceModel[];
+}

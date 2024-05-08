@@ -1,0 +1,66 @@
+import { DIDDocument, VerificationMethod, VerificationMethodJwk, VerificationMethodPublicKey58 } from "@extrimian/did-core";
+import { Base, BaseConverter, IVCJsonLDKeyPair, Suite, suiteDecorator } from "@extrimian/kms-core";
+import { JsonLDSuite } from "@extrimian/kms-suite-jsonld";
+import { VerifiableCredential } from "@extrimian/vc-core";
+import {
+  BbsBlsSignature2020,
+  BbsBlsSignatureProof2020,
+  Bls12381G2KeyPair,
+  deriveProof,
+} from "@mattrglobal/jsonld-signatures-bbs";
+
+@suiteDecorator(Suite.Bbsbls2020)
+export class BbsBls2020Suite extends JsonLDSuite {
+  async create(): Promise<IVCJsonLDKeyPair> {
+    var keyPair = await Bls12381G2KeyPair.generate();
+
+    this.secret = keyPair;
+
+    return {
+      privateKey: keyPair.privateKey,
+      publicKey: keyPair.publicKey,
+      keyType: keyPair.type
+    };
+  }
+
+  async deriveVC(signedDocument: any, deriveProofFrame: string, didDocumentResolver: (did: string) => Promise<DIDDocument>): Promise<VerifiableCredential> {
+    this.didDocumentResolver = didDocumentResolver;
+
+    const derivedProof = await deriveProof(signedDocument, deriveProofFrame, {
+      suite: new BbsBlsSignatureProof2020(),
+      documentLoader: this.documentLoader
+    });
+
+    return new VerifiableCredential(derivedProof);
+    // return derivedProof as VerifiableCredential;
+  }
+
+  vmConvertions(vm: VerificationMethod): VerificationMethodPublicKey58 {
+    if (vm.type == "Bls12381G1Key2020" && (<VerificationMethodJwk>vm).publicKeyJwk) {
+      return {
+        id: vm.id,
+        controller: vm.controller,
+        publicKeyBase58: BaseConverter.convert((<VerificationMethodJwk>vm).publicKeyJwk,
+          Base.JWK, Base.Base58),
+      } as VerificationMethodPublicKey58;
+    }
+  }
+
+  protected async getSuite(params?: {
+    verificationMethodId: string;
+    controllerDid: string;
+  }): Promise<any> {
+    if (this.secret && params) {
+      return new BbsBlsSignature2020({
+        key: new Bls12381G2KeyPair({
+          id: params.verificationMethodId,
+          controller: params.controllerDid,
+          publicKeyBase58: this.secret.publicKey,
+          privateKeyBase58: this.secret.privateKey,
+        }),
+      });
+    } else {
+      return new BbsBlsSignature2020();
+    }
+  }
+}

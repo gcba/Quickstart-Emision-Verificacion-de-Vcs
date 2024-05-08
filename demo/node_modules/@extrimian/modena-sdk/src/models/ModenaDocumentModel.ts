@@ -1,0 +1,10 @@
+import ModenaPublicKeyModel from './ModenaPublicKeyModel';
+import ModenaServiceModel from './ModenaServiceModel';
+
+/**
+ * Defines the document structure used by ION.
+ */
+export default interface ModenaDocumentModel {
+  publicKeys?: ModenaPublicKeyModel[];
+  services?: ModenaServiceModel[];
+}

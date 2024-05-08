@@ -1,0 +1,10 @@
+// import { ICommand, ICommandHandler } from ".."
+// import { DIService } from "../services/dependency-injection.service";
+
+// const handler = (command: new (...args: never[]) => ICommand<any>) => {
+//     return (handler: new (...args: never[]) => ICommandHandler<any, any>) => {
+//         DIService.addCommand(command, handler);
+//     }
+// }
+
+// export { handler};

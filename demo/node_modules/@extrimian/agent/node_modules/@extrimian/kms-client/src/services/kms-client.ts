@@ -1,0 +1,489 @@
+import {
+  DIDCommMessage,
+  DIDDocument,
+  DIDDocumentUtils,
+  Purpose,
+  VerificationMethodJwk
+} from "@extrimian/did-core";
+import {
+  IES256kSuite,
+  IVCSuite,
+  IKMS,
+  Suite,
+  VCSuite,
+  LANG,
+  KMSStorage,
+  IVCJsonLDKeyPair,
+  IKeyPair,
+  IES256kKeyPair,
+  IDIDCommSuite,
+  IDidCommKeyPair,
+  BaseConverter,
+  Base,
+  IJWK,
+  IDIDCommV2Suite,
+  IPackedDIDCommMessage,
+  IDIDCommMessage,
+  DIDCommMessagePacking,
+  SelectiveDisclosureZKPSuite,
+  DIDCommPackedMessage,
+} from "@extrimian/kms-core";
+import { VerifiableCredential } from "@extrimian/vc-core";
+import "@extrimian/kms-suite-didcomm";
+import "@extrimian/kms-suite-didcomm-v2";
+import "@extrimian/kms-suite-es256k";
+import "@extrimian/kms-suite-rsa-signature-2018";
+import { DIDCommSuite as DIDCommSuiteV1 } from "@extrimian/kms-suite-didcomm";
+import { DIDCommSuite } from "@extrimian/kms-suite-didcomm-v2";
+import { BbsBls2020Suite } from "@extrimian/kms-suite-bbsbls2020";
+import { RSASignature2018Suite } from "@extrimian/kms-suite-rsa-signature-2018";
+import { ES256kSuite } from "@extrimian/kms-suite-es256k";
+
+export class KMSClient implements IKMS {
+  suites: Map<Suite, new (...args: never[]) => any> = new Map();
+
+  constructor(
+    private config: {
+      lang: LANG;
+      storage: KMSStorage;
+      didResolver?: (did: string) => Promise<DIDDocument>;
+      mobile?: boolean;
+    }
+  ) {
+    this.suites.set(Suite.DIDComm, DIDCommSuiteV1)
+    this.suites.set(Suite.DIDCommV2, DIDCommSuite)
+    this.suites.set(Suite.ES256k, ES256kSuite)
+    this.suites.set(Suite.RsaSignature2018, RSASignature2018Suite)
+
+    if (!config.mobile) {
+      import("@extrimian/kms-suite-bbsbls2020");
+      this.suites.set(Suite.Bbsbls2020, BbsBls2020Suite)
+    }
+    if (!config.didResolver)
+      console.info(
+        "KMS didResolver not configured. You need set a didResolver to signVC"
+      );
+
+  }
+
+  async create(suite: Suite): Promise<{ publicKeyJWK: IJWK }> {
+    const suiteType = this.suites.get(suite);
+    let suiteInstance;
+
+    if (!suiteType) {
+      throw new Error("Unsupported Suite");
+    }
+
+    suiteInstance = new suiteType();
+
+    let secrets: IKeyPair;
+    let jwk: IJWK;
+
+    if (suite == Suite.ES256k) {
+      const ethrSuite = suiteInstance as IES256kSuite;
+      secrets = await ethrSuite.create({ lang: this.config.lang });
+      jwk = BaseConverter.convert(secrets.publicKey, Base.Hex, Base.JWK, secrets.keyType || (<IES256kKeyPair>secrets).curve);
+    } else if (suite == Suite.Bbsbls2020) {
+      secrets = await suiteInstance.create();
+      jwk = BaseConverter.convert(secrets.publicKey, Base.Base58, Base.JWK, secrets.keyType);
+    } else if (suite == Suite.RsaSignature2018) {
+      secrets = await suiteInstance.create();
+      jwk = secrets!.publicKeyJWK!;
+    } else if (suite == Suite.DIDComm) {
+      secrets = await suiteInstance.create();
+      jwk = BaseConverter.convert(secrets.publicKey, Base.Hex, Base.JWK, secrets.keyType);
+    } else if (suite == Suite.DIDCommV2) {
+      secrets = await suiteInstance.create();
+      jwk = BaseConverter.convert(secrets.publicKey, Base.Hex, Base.JWK, secrets.keyType);
+    } else {
+      throw new Error("Unsupported Suite");
+    }
+
+    const pkHex = BaseConverter.convert(jwk, Base.JWK, Base.Hex);
+
+    await this.config.storage.add(pkHex, {
+      suite,
+      ...secrets,
+    });
+
+    return { publicKeyJWK: jwk };
+  }
+
+  async sign(suite: Suite, publicKeyJWK: IJWK, content: any): Promise<string> {
+    const publicKeyHex = BaseConverter.convert(
+      publicKeyJWK,
+      Base.JWK,
+      Base.Hex
+    );
+    const suiteType = this.suites.get(suite);
+
+    if (!suiteType) {
+      throw new Error("Unsupported Suite");
+    }
+
+    const privateKey = (await this.config.storage.get(
+      publicKeyHex
+    )) as IES256kKeyPair;
+    const suiteInstance = new suiteType() as IES256kSuite;
+
+    await suiteInstance.load(privateKey);
+
+    return await suiteInstance.sign(content);
+  }
+
+  async verifySignature(publicKeyJWK: IJWK, originalContent: string, signature: string): Promise<boolean> {
+    const suiteType = this.suites.get(Suite.ES256k);
+    const suiteInstance = new suiteType() as IES256kSuite;
+    return await suiteInstance.verifySignature(originalContent, signature, publicKeyJWK);
+  }
+
+  async signVC(
+    suite: Suite,
+    publicKeyJWK: IJWK,
+    vc: any,
+    did: string,
+    verificationMethodId: string,
+    purpose: Purpose
+  ): Promise<VerifiableCredential> {
+    const suiteType = this.suites.get(suite);
+
+    if (!suiteType) {
+      throw new Error("Unsupported Suite");
+    }
+
+    const suiteInstance = new suiteType() as IVCSuite;
+
+    const publicKeyHex = BaseConverter.convert(
+      publicKeyJWK,
+      Base.JWK,
+      Base.Hex
+    );
+
+    const key = (await this.config.storage.get(
+      publicKeyHex
+    )) as IVCJsonLDKeyPair;
+
+    suiteInstance.loadSuite({
+      secrets: key,
+      useCache: true,
+    });
+
+    return (await suiteInstance.sign(
+      vc,
+      did,
+      verificationMethodId,
+      purpose
+    )) as VerifiableCredential;
+  }
+
+  async deriveVC(params: {
+    vc: VerifiableCredential<any>,
+    frame: any,
+  }): Promise<VerifiableCredential<any>> {
+    const suiteType = this.suites.get(Suite.Bbsbls2020);
+
+    if (!suiteType) {
+      throw new Error("Unsupported Suite");
+    }
+
+    const suiteInstance = new suiteType() as SelectiveDisclosureZKPSuite;
+
+    const derivedVc = await suiteInstance.deriveVC(params.vc, params.frame, this.config.didResolver);
+
+    return derivedVc;
+  }
+
+  async signVCPresentation(params: {
+    publicKeyJWK: IJWK,
+    presentationObject: any,
+    did: string,
+    verificationMethodId: string,
+    purpose: Purpose
+  }) {
+    const suiteType = this.suites.get(Suite.RsaSignature2018);
+
+    if (!suiteType) {
+      throw new Error("Unsupported Suite");
+    }
+
+    const suiteInstance = new suiteType() as IVCSuite;
+
+    const publicKeyHex = BaseConverter.convert(
+      params.publicKeyJWK,
+      Base.JWK,
+      Base.Hex
+    );
+
+    const key = (await this.config.storage.get(
+      publicKeyHex
+    )) as IVCJsonLDKeyPair;
+
+    suiteInstance.loadSuite({
+      secrets: key,
+      useCache: true,
+    });
+
+    return (await suiteInstance.sign(
+      params.presentationObject,
+      params.did,
+      params.verificationMethodId,
+      params.purpose
+    ));
+  }
+
+  async pack(
+    publicKeyJWK: IJWK,
+    toHexPublicKeys: string[],
+    contentToSign: string
+  ): Promise<string> {
+    const suiteType = this.suites.get(Suite.DIDComm);
+
+    if (!suiteType) {
+      throw new Error("Unsupported Suite");
+    }
+
+    const publicKeyHex = BaseConverter.convert(
+      publicKeyJWK,
+      Base.JWK,
+      Base.Hex
+    );
+
+    const privateKey = (await this.config.storage.get(
+      publicKeyHex
+    )) as IDidCommKeyPair;
+    const suiteInstance = new suiteType() as IDIDCommSuite;
+
+    suiteInstance.load(privateKey);
+
+    return await suiteInstance.pack(true, toHexPublicKeys, contentToSign);
+  }
+
+  async packDIDCommV2(params: {
+    senderVerificationMethodId: string,
+    recipientVerificationMethodIds: string[],
+    message: IDIDCommMessage,
+    packing: DIDCommMessagePacking
+  }): Promise<{ packedMessage: DIDCommPackedMessage }> {
+
+    // if (!this.config.didResolver) {
+    //   console.log()
+    // }
+
+    const suiteType = this.suites.get(Suite.DIDCommV2);
+
+    if (!suiteType) {
+      throw new Error("Unsupported Suite");
+    }
+
+    const receiptKeys = await Promise.all(params.recipientVerificationMethodIds.map(async vmId => {
+      const didDoc = await this.config.didResolver(vmId.substring(0, vmId.indexOf("#")));
+
+      const vm = await DIDDocumentUtils.getVerificationMethodById(didDoc, vmId) as VerificationMethodJwk;
+
+      if (vm) {
+        return {
+          verificationMethodId: vmId,
+          publicKeyHex: BaseConverter.convert(
+            vm.publicKeyJwk,
+            Base.JWK,
+            Base.Hex
+          )
+        }
+      }
+    }));
+
+    const senderDoc = await this.config.didResolver(
+      params.senderVerificationMethodId.substring(0, params.senderVerificationMethodId.indexOf("#")));
+
+    const senderPbk = DIDDocumentUtils.getVerificationMethodById(senderDoc, params.senderVerificationMethodId) as VerificationMethodJwk;
+
+    const senderPublicKeyHex = BaseConverter.convert(
+      senderPbk.publicKeyJwk,
+      Base.JWK,
+      Base.Hex
+    );
+
+    const privateKey = (await this.config.storage.get(
+      senderPublicKeyHex
+    )) as IDidCommKeyPair;
+
+    if (!privateKey) {
+      throw new Error(`Cannot find private key for public '${senderPublicKeyHex}' key on KMS storage.`)
+    }
+
+    const suiteInstance = new (<any>suiteType)(this.config.didResolver) as IDIDCommV2Suite;
+
+    suiteInstance.load(privateKey);
+
+    const packedMessage = await suiteInstance.pack({
+      packing: params.packing,
+      message: params.message,
+      toKeys: receiptKeys,
+      senderVerificationMethodId: params.senderVerificationMethodId
+    });
+
+    return { packedMessage: JSON.parse(packedMessage.message) as DIDCommPackedMessage };
+  }
+
+  async packv2(publicKeyJWK: IJWK,
+    senderVerificationMethodId: string,
+    toHexPublicKeys: string[],
+    message: IDIDCommMessage,
+    packing: DIDCommMessagePacking
+  ): Promise<IPackedDIDCommMessage> {
+    const suiteType = this.suites.get(Suite.DIDCommV2);
+
+    if (!suiteType) {
+      throw new Error("Unsupported Suite");
+    }
+
+    const publicKeyHex = BaseConverter.convert(
+      publicKeyJWK,
+      Base.JWK,
+      Base.Hex
+    );
+
+    const privateKey = (await this.config.storage.get(
+      publicKeyHex
+    )) as IDidCommKeyPair;
+    const suiteInstance = new (<any>suiteType)(this.config.didResolver) as IDIDCommV2Suite;
+
+    suiteInstance.load(privateKey);
+
+    return await suiteInstance.pack({
+      packing: packing,
+      message: message,
+      senderVerificationMethodId: senderVerificationMethodId,
+      toKeys: toHexPublicKeys.map(x => ({
+        publicKeyHex: x,
+        verificationMethodId: senderVerificationMethodId
+      })),
+    });
+  }
+
+  async unpack(publicKeyJWK: IJWK, packedContent: string): Promise<string> {
+    const suiteType = this.suites.get(Suite.DIDComm);
+
+    if (!suiteType) {
+      throw new Error("Unsupported Suite");
+    }
+
+    const publicKeyHex = BaseConverter.convert(
+      publicKeyJWK,
+      Base.JWK,
+      Base.Hex
+    );
+
+    const privateKey = (await this.config.storage.get(
+      publicKeyHex
+    )) as IDidCommKeyPair;
+    const suiteInstance = new suiteType() as IDIDCommSuite;
+
+    suiteInstance.load(privateKey);
+
+    return await suiteInstance.unpack(packedContent);
+  }
+
+  async unpackv2(publicKeyJWK: IJWK, jwe: any): Promise<string> {
+    if (!this.config.didResolver) {
+      throw new Error("DID Resolver required on KMSClient instance to Unpack DIDComm v2")
+    }
+
+    const suiteType = this.suites.get(Suite.DIDCommV2);
+
+    if (!suiteType) {
+      throw new Error("Unsupported Suite");
+    }
+
+    const publicKeyHex = BaseConverter.convert(
+      publicKeyJWK,
+      Base.JWK,
+      Base.Hex
+    );
+
+    const privateKey = (await this.config.storage.get(
+      publicKeyHex
+    )) as IDidCommKeyPair;
+    const suiteInstance = new (<any>suiteType)(this.config.didResolver) as IDIDCommV2Suite;
+
+    suiteInstance.load(privateKey);
+
+    return await suiteInstance.unpack(jwe);
+  }
+
+  async unpackvDIDCommV2(receiptDID: string,
+    packedMessage: any | DIDCommPackedMessage): Promise<{ message: DIDCommMessage, metaData: { packing: DIDCommMessagePacking } }> {
+    if (!this.config.didResolver) {
+      throw new Error("DID Resolver required on KMSClient instance to Unpack DIDComm v2")
+    }
+
+    let publicKeyHex = null;
+
+    const dcpm = packedMessage as DIDCommPackedMessage;
+    const receiptKid = dcpm.recipients?.find(x => x.header.kid.indexOf(receiptDID) > -1);
+
+    if (receiptKid != null) {
+      const receiptDoc = await this.config.didResolver(receiptDID);
+      const pbk = DIDDocumentUtils.getVerificationMethodById(receiptDoc, receiptKid.header.kid) as VerificationMethodJwk;
+      publicKeyHex = BaseConverter.convert(pbk.publicKeyJwk, Base.JWK, Base.Hex, pbk.type);
+    }
+
+    const suiteType = this.suites.get(Suite.DIDCommV2);
+
+    if (!suiteType) {
+      throw new Error("Unsupported Suite");
+    }
+
+    const suiteInstance = new (<any>suiteType)(this.config.didResolver) as IDIDCommV2Suite;
+
+    if (publicKeyHex) {
+      const privateKey = (await this.config.storage.get(
+        publicKeyHex
+      )) as IDidCommKeyPair;
+
+      suiteInstance.load(privateKey);
+    }
+
+    const result = await suiteInstance.unpack({ message: packedMessage });
+
+    return result;
+  }
+
+  async export(publicKeyJWK: IJWK): Promise<IKeyPair> {
+    const publicKeyHex = BaseConverter.convert(
+      publicKeyJWK,
+      Base.JWK,
+      Base.Hex
+    );
+
+    const data = await this.config.storage.get(publicKeyHex);
+    return data;
+  }
+
+  async import(key: {
+    publicKeyHex: string,
+    secret: IKeyPair
+  }) {
+    await this.config.storage.add(key.publicKeyHex, key.secret);
+  }
+
+  async getPublicKeysBySuiteType(suite: Suite): Promise<IJWK[]> {
+    const data = await this.config.storage.getAll();
+    const returnKeys = new Array<IJWK>();
+
+    data.forEach((value: IKeyPair, key) => {
+      if (data.get(key).suite == suite)
+        value.publicKeyJWK ? returnKeys.push(value.publicKeyJWK) :
+          returnKeys.push(BaseConverter.convert(key, Base.Hex, Base.JWK, (<IES256kKeyPair>value).curve || value.keyType));
+    });
+
+    return returnKeys;
+  }
+
+  async getAllPublicKeys(): Promise<IJWK[]> {
+    const data = await this.config.storage.getAll();
+    return Array.from(data.keys()).map((x) =>
+      BaseConverter.convert(x, Base.Hex, Base.JWK, (<IES256kKeyPair>data.get(x)).curve || data.get(x).keyType)
+    );
+  }
+}
