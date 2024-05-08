@@ -8,7 +8,7 @@ El objetivo de este Quickstart es registrar los pasos para realizar un proceso d
 3. [Verificación de una VC](https://github.com/gcba/Quickstart-Emision-Verificacion-de-Vcs/tree/master?tab=readme-ov-file#verificaci%C3%B3n-de-una-vc).
 
 ## Emisión (Formato QR)
-1. [Creación y lectura de código QR de Credencial de Prueba]
+1. [Creación y lectura de código QR de Credencial de Prueba](https://github.com/gcba/Quickstart-Emision-Verificacion-de-Vcs/tree/master?tab=readme-ov-file#generaci%C3%B3n-de-credencial-de-pruebas-con-c%C3%B3digo-qr)
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ### Instala y crea tu DID
@@ -609,7 +609,7 @@ npx ts-node credential.ts
 
 ## Generación de Credencial de pruebas con código QR
 
-1. Clonar el archivo [Demo]([https://github.com/gcba/Quickstart-Emision-Verificacion-de-Vcs/tree/master/demo)
+1. Clonar el archivo [Demo][https://github.com/gcba/Quickstart-Emision-Verificacion-de-Vcs/tree/master/demo]
 
 2. Eliminar de la solucion los archivos:
 
@@ -673,10 +673,11 @@ Se puede navegar la url http://localhost:3010/invitation-message y se visualizar
 {"invitationId":"135204a7-91d2-4ff2-9352-9cc6d4f91272","invitationContent":"didcomm://?_oob=eyJ0eXBlIjoiaHR0cHM6Ly9kaWRjb21tLm9yZy9vdXQtb2YtYmFuZC8yLjAvaW52aXRhdGlvbiIsImlkIjoiMTM1MjA0YTctOTFkMi00ZmYyLTkzNTItOWNjNmQ0ZjkxMjcyIiwiZnJvbSI6ImRpZDpxdWFya2lkOkVpQ25pekFscVNWOXEzUHFEbGZUTVpzcV9LRUQ1Qm50OG1nelJIYmlsMEc4RmciLCJib2R5Ijp7ImdvYWxfY29kZSI6InN0cmVhbWxpbmVkLXZjIiwiYWNjZXB0IjpbImRpZGNvbW0vdjIiXX19"}
 ```
 
-El contenido de "invitationContent" (lo que esta dentro de las comillas despues de los ":")
-Es el codigo que se utiliza para dibujar el QR
-Ese codigo se puede pegar en cualquier web de generacion de QR por ejemplo https://www.the-qrcode-generator.com/
-Seleccionar la opcion Texto Plano, pegar el contenido y se dibuja el QR para poder escanearlo con la wallet de Quarkid de Producción, disponible en los Stores de los Sistemas Operativos. 
+- El contenido de "invitationContent" (lo que esta dentro de las comillas despues de los ":")
+- Es el codigo que se utiliza para dibujar el QR
+- Ese codigo se puede pegar en cualquier web de generacion de QR, sugerimos (QR Code Generator)[https://www.the-qrcode-generator.com/]
+
+7. Seleccionar la opcion Texto Plano, pegar el contenido y se dibuja el QR para poder escanearlo con la wallet de Quarkid de Producción, disponible en los Stores de los Sistemas Operativos. 
 
 
 
