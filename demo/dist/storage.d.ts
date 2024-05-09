@@ -1,5 +1,5 @@
-import { AgentSecureStorage, IAgentStorage } from '@extrimian/agent';
-import { IStorage } from '@extrimian/agent/dist/models/agent-storage';
+import { AgentSecureStorage, IAgentStorage } from '@quarkid/agent';
+import { IStorage } from '@quarkid/agent/dist/models/agent-storage';
 export declare class MemoryStorage implements IStorage {
     mapper: Map<string, any>;
     add(key: string, value: any): Promise<void>;

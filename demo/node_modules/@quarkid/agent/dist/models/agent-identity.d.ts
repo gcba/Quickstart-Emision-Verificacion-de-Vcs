@@ -1,0 +1,83 @@
+import { IJWK, IKeyPair, IKMS } from '@extrimian/kms-core';
+import { IdentityDataShareBehavior, IdentityExportResult } from '../data-share-behaviours/identity-data-share-behavior';
+import { IAgentRegistry, KeyDefinition, ServiceDefinition, VMKey } from './agent-registry';
+import { IAgentResolver } from './agent-resolver';
+import { IAgentStorage } from './agent-storage';
+import { DID } from './did';
+export declare class AgentIdentity {
+    private agentStorage;
+    private kms;
+    private resolver;
+    private registry;
+    private _dids;
+    private _did;
+    private _onOperationalDIDChanged;
+    get operationalDIDChanged(): import("../utils/lite-event").ILiteEvent<{
+        did: DID;
+    }>;
+    private _onIdentityInitialized;
+    get identityInitialized(): import("../utils/lite-event").ILiteEvent<void>;
+    private readonly onDidCreated;
+    get didCreated(): import("../utils/lite-event").ILiteEvent<{
+        did: DID;
+    }>;
+    constructor(params: {
+        agentStorage?: IAgentStorage;
+        resolver: IAgentResolver;
+        registry: IAgentRegistry;
+        kms: IKMS;
+    });
+    private _initialized;
+    get initialized(): boolean;
+    initialize(params?: {
+        operationalDID?: DID;
+        resolver: IAgentResolver;
+        registry: IAgentRegistry;
+    }): Promise<void>;
+    addDID(params: {
+        did: DID;
+    }): Promise<void>;
+    setOperationalDID(did: DID): Promise<void>;
+    getOperationalDID(): DID;
+    getDIDs(): string[];
+    createNewDID(): Promise<DID>;
+    createNewDID(params: {
+        preventCredentialCreation?: boolean;
+        dwnUrl?: string | string[];
+        services?: ServiceDefinition[];
+        keysToCreate?: KeyDefinition[];
+        createDefaultKeys?: boolean;
+        keysToImport?: {
+            id: string;
+            vmKey: VMKey;
+            publicKeyJWK: IJWK;
+            secrets: IKeyPair;
+        }[];
+        didMethod?: string;
+    }): Promise<DID>;
+    checkDIDPublished(shortDid: DID, setAsOperationalAfterDIDPublish?: boolean): Promise<boolean>;
+    waitForDIDPublish(shortDid: DID, setAsOperationalAfterDIDPublish?: boolean): Promise<void>;
+    updateDID(params?: {
+        did?: DID;
+        dwnUrl?: {
+            id?: string;
+            url: string;
+        }[];
+        idsOfServiceToRemove?: string[];
+        controllersToAdd?: IJWK[];
+        servicesToAdd?: ServiceDefinition[];
+        verificationMethodsToAdd?: KeyDefinition[];
+        updateKeysToRemove?: {
+            publicKeys?: IJWK[];
+            updateCommitment?: string[];
+        };
+        idsOfVerificationMethodsToRemove?: string[];
+    }): Promise<void>;
+    exportKeys(params: {
+        exportBehavior: IdentityDataShareBehavior;
+    }): Promise<IdentityExportResult>;
+    importKeys(params: {
+        exportResult: IdentityExportResult;
+        exportBehavior: IdentityDataShareBehavior;
+    }): Promise<void>;
+}

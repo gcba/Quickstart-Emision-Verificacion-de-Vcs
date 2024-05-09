@@ -1,4 +1,4 @@
-import { Agent, WACICredentialOfferSucceded, WACIProtocol } from "@extrimian/agent";
+import { Agent, WACICredentialOfferSucceded, WACIProtocol } from "@quarkid/agent";
 import { Injectable } from "@nestjs/common";
 import { FileSystemStorage, MemoryStorage } from "./storage";
 

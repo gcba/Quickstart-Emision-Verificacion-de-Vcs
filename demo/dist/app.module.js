@@ -7,7 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppModule = void 0;
-const agent_1 = require("@extrimian/agent");
+const agent_1 = require("@quarkid/agent");
 const common_1 = require("@nestjs/common");
 const app_controller_1 = require("./app.controller");
 const app_service_1 = require("./app.service");
@@ -51,8 +51,9 @@ const agentProvider = {
         agent_1.WebsocketServerTransport
     ]
 };
-let AppModule = exports.AppModule = class AppModule {
+let AppModule = class AppModule {
 };
+exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [],

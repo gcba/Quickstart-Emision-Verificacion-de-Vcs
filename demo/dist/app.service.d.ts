@@ -1,4 +1,4 @@
-import { Agent } from "@extrimian/agent";
+import { Agent } from "@quarkid/agent";
 import { WACIProtocolService } from './waci-protocol-utils';
 export declare class AgentService {
     private readonly agent;

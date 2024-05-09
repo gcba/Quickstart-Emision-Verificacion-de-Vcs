@@ -10,10 +10,10 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WACIProtocolService = void 0;
-const agent_1 = require("@extrimian/agent");
+const agent_1 = require("@quarkid/agent");
 const common_1 = require("@nestjs/common");
 const storage_1 = require("./storage");
-let WACIProtocolService = exports.WACIProtocolService = class WACIProtocolService {
+let WACIProtocolService = class WACIProtocolService {
     constructor() {
     }
     setCurrentAgent(agent) {
@@ -123,6 +123,7 @@ let WACIProtocolService = exports.WACIProtocolService = class WACIProtocolServic
         });
     }
 };
+exports.WACIProtocolService = WACIProtocolService;
 exports.WACIProtocolService = WACIProtocolService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [])

@@ -11,11 +11,11 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AgentService = void 0;
 const common_1 = require("@nestjs/common");
-const agent_1 = require("@extrimian/agent");
+const agent_1 = require("@quarkid/agent");
 const waci_protocol_utils_1 = require("./waci-protocol-utils");
 const base_64_1 = require("base-64");
 const QRCodeTerminal = require("qrcode-terminal");
-let AgentService = exports.AgentService = class AgentService {
+let AgentService = class AgentService {
     constructor(agent, wps) {
         this.agent = agent;
         this.wps = wps;
@@ -56,6 +56,7 @@ let AgentService = exports.AgentService = class AgentService {
         };
     }
 };
+exports.AgentService = AgentService;
 exports.AgentService = AgentService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [agent_1.Agent, waci_protocol_utils_1.WACIProtocolService])

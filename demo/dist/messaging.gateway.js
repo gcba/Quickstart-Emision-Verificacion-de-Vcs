@@ -12,8 +12,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MessagingGateway = void 0;
 const websockets_1 = require("@nestjs/websockets");
 const common_1 = require("@nestjs/common");
-const agent_1 = require("@extrimian/agent");
-let MessagingGateway = exports.MessagingGateway = class MessagingGateway {
+const agent_1 = require("@quarkid/agent");
+let MessagingGateway = class MessagingGateway {
     constructor(transport) {
         this.transport = transport;
         console.log("MessagingGateway");
@@ -29,6 +29,7 @@ let MessagingGateway = exports.MessagingGateway = class MessagingGateway {
         common_1.Logger.log(`Client disconnected: ${client.id}`);
     }
 };
+exports.MessagingGateway = MessagingGateway;
 exports.MessagingGateway = MessagingGateway = __decorate([
     (0, websockets_1.WebSocketGateway)({ cors: true }),
     __metadata("design:paramtypes", [agent_1.WebsocketServerTransport])

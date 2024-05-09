@@ -1,5 +1,5 @@
 import { OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit } from '@nestjs/websockets';
-import { WebsocketServerTransport } from '@extrimian/agent';
+import { WebsocketServerTransport } from '@quarkid/agent';
 export declare class MessagingGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
     private transport;
     constructor(transport: WebsocketServerTransport);

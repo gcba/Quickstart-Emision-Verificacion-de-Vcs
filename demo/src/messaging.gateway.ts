@@ -5,7 +5,7 @@ import {
   WebSocketGateway,
 } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
-import { WebsocketServerTransport } from '@extrimian/agent';
+import { WebsocketServerTransport } from '@quarkid/agent';
 
 @WebSocketGateway({ cors: true })
 export class MessagingGateway

@@ -1,4 +1,4 @@
-import { Agent, AgentModenaUniversalRegistry, AgentModenaUniversalResolver, DWNTransport, WebsocketServerTransport } from '@extrimian/agent';
+import { Agent, AgentModenaUniversalRegistry, AgentModenaUniversalResolver, DWNTransport, WebsocketServerTransport } from '@quarkid/agent';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AgentService } from './app.service';
@@ -23,15 +23,6 @@ const agentProvider = {
 
     await agent.initialize();
 
-    // await agent.identity.updateDID({
-    //   idsOfServiceToRemove: ["websocket"],
-    //   servicesToAdd: [{
-    //     id: 'websocket-2',
-    //     type: "MessagingWebSocket",
-    //     serviceEndpoint: "https://248c-161-22-25-244.ngrok-free.app"
-    //   }]
-    // });
-
     if (agent.identity.getOperationalDID() == null) {
       const waitDIDCreation = new Promise<void>(async (resolve, reject) => {
         agent.identity.didCreated.on((args) => {
@@ -39,7 +30,6 @@ const agentProvider = {
         })
 
         await agent.identity.createNewDID({
-          // dwnUrl: "https://demo.extrimian.com/dwn/",
           services: [
             {
               id: 'websocket',
@@ -55,7 +45,7 @@ const agentProvider = {
 
     wps.setCurrentAgent(agent);
 
-    return agent; // Devuelve el objeto de la clase Agent inicializado
+    return agent;
   },
   inject: [WACIProtocolService,
     WebsocketServerTransport

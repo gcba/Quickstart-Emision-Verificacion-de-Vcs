@@ -1,4 +1,4 @@
-import { Agent, WACIProtocol } from "@extrimian/agent";
+import { Agent, WACIProtocol } from "@quarkid/agent";
 import { FileSystemStorage } from "./storage";
 export declare class WACIProtocolService {
     agent: Agent;
